@@ -12,6 +12,13 @@ float   NowPrecip;      // inches of rain per month
 float   NowTemp;        // temperature this month
 float   NowHeight;       // grain height in inches
 int NowNumDeer;         // number of deer in the current population
+int NowNumMushroom;     // number of mushrooms in the current population
+
+const float MAGIC_GROWS_PER_MONTH = 5.0;
+const float MIN_TEMP_MUSHROOM = 50.0;
+const float MAX_TEMP_MUSHROOM = 70.0;
+const float MIN_PRECIP_MUSHROOM = 9.0;
+const float DEER_EATS_MUSHROOM_PER_MONTH = 1.0;
 
 const float GRAIN_GROWS_PER_MONTH =     9.0;
 const float ONE_DEER_EATS_PER_MONTH =       1.0;
@@ -27,42 +34,28 @@ const float RANDOM_TEMP =           10.0;   // plus or minus noise
 const float MIDTEMP =               40.0;
 const float MIDPRECIP =             10.0;
 
-
 void Deer();
 void Grain();
 void Watcher();
-void MyAgent();
+void MagicMushroom();
 
-
-float SQR( float x )
-{
-    return x*x;
-}
-
-float Ranf( unsigned int *seedp,  float low, float high )
-{
+float SQR( float x ){return x*x;}
+float Ranf( unsigned int *seedp,  float low, float high ){
     float r = (float) rand_r( seedp );              // 0 - RAND_MAX
 
-    return(   low  +  r * ( high - low ) / (float)RAND_MAX   );
-}
-
-
-int Ranf( unsigned int *seedp, int ilow, int ihigh )
-{
+    return(   low  +  r * ( high - low ) / (float)RAND_MAX   );}
+int Ranf( unsigned int *seedp, int ilow, int ihigh ) {
     float low = (float)ilow;
     float high = (float)ihigh + 0.9999f;
 
-    return (int)(  Ranf(seedp, low,high) );
-}
+    return (int)(  Ranf(seedp, low,high) );}
 
 
-int main () 
-{
+int main () {
     #ifndef _OPENMP
     fprintf("No OpenMP support!\n" );
     return 1;
     #endif
-
 
 
     float ang = (  30.*(float)NowMonth + 15.  ) * ( M_PI / 180. );
@@ -104,28 +97,22 @@ int main ()
 
         #pragma omp section
         {
-            MyAgent( ); // your own
+            MagicMushroom( ); // your own
         }
-    }       // implied barrier -- all functions must return in order
-    // to allow any of them to get past here
-}
+    }}
 
-
-
-
-void Deer() 
-{
+void Deer() {
     while( NowYear < 2027 )
     {
         // compute a temporary next-value for this quantity
         // based on the current state of the simulation:
         
         int nextNumDeer = NowNumDeer;
-        //int carryingCapacity = (int)( NowHeight );
+        int carryingCapacity = (int)( NowHeight );
 
-        if ( nextNumDeer < NowHeight )
+        if ( nextNumDeer < carryingCapacity + NowNumMushroom )
             nextNumDeer++;
-        else if( nextNumDeer > NowHeight )
+        else if( nextNumDeer > carryingCapacity + NowNumMushroom )
             nextNumDeer--;
 
         if (nextNumDeer < 0)
@@ -143,43 +130,9 @@ void Deer()
         // DonePrinting barrier:
         #pragma omp barrier
         
-    }
-}
+    }}
 
-
-void Grain() 
-{
-    while( NowYear < 2027 )
-    {
-
-        float tempFactor = exp(-SQR(( NowTemp - MIDTEMP ) / 10.));
-        float precipFactor = exp(-SQR(( NowPrecip - MIDPRECIP ) / 10.));
-
-        float nextHeight = NowHeight;
-        nextHeight += tempFactor * precipFactor * GRAIN_GROWS_PER_MONTH;
-        nextHeight -= (float)NowNumDeer * ONE_DEER_EATS_PER_MONTH;
-
-        if ( nextHeight < 0.0 ) 
-        {
-            nextHeight = 0.0;
-        }
-        
-        #pragma omp barrier
-        
-        NowHeight = nextHeight;
-
-        // DoneAssigning barrier:
-        #pragma omp barrier
-        
-
-        // DonePrinting barrier:
-        #pragma omp barrier
-    }
-}
-
-
-void Watcher() 
-{
+void Watcher() {
     while( NowYear < 2027 )
     {
         
@@ -211,17 +164,52 @@ void Watcher()
         // DonePrinting barrier:
         #pragma omp barrier
         
-    }
+    }}
 
-}
-
-
-void MyAgent() 
+void Grain() 
 {
     while( NowYear < 2027 )
     {
-        // compute a temporary next-value for this quantity
-        // based on the current state of the simulation:
+
+        float tempFactor = exp(-SQR(( NowTemp - MIDTEMP ) / 10.));
+        float precipFactor = exp(-SQR(( NowPrecip - MIDPRECIP ) / 10.));
+
+        float nextHeight = NowHeight;
+        nextHeight += tempFactor * precipFactor * GRAIN_GROWS_PER_MONTH;
+        
+       
+   		int deers_eating_mushroom = min((float)NowNumMushroom / DEER_EATS_MUSHROOM_PER_MONTH, NowNumDeer);
+   		int deers_eating_grain = NowNumDeer - deers_eating_mushroom;
+
+   		nextHeight -= (float)deers_eating_grain * ONE_DEER_EATS_PER_MONTH;
+                                 
+        if ( nextHeight < 0.0 ) 
+        {
+            nextHeight = 0.0;
+        }
+        
+        #pragma omp barrier
+        
+        NowHeight = nextHeight;
+
+        // DoneAssigning barrier:
+        #pragma omp barrier
+        
+
+        // DonePrinting barrier:
+        #pragma omp barrier
+    }
+}
+
+
+void MagicMushroom() 
+{
+    while( NowYear < 2027 )
+    {
+        
+        float nextNumMushroom = NowNumMushroom;
+
+        if (NowTemp <= MAX_TEMP_MUSHROOM && NowTemp >= MAX_TEMP_MUSHROOM && NowPrecip >= MIN_PRECIPITATION)
 
         // DoneComputing barrier:
         #pragma omp barrier
