@@ -6,6 +6,7 @@
 using namespace std;
 
 unsigned int seed = 0;
+int real_time = 1;
 FILE* myfile;
 
 int NowYear;     // 2021 - 2026
@@ -66,7 +67,7 @@ int main () {
 
     myfile = fopen("out.csv","w");
 
-    fprintf(myfile,"NowYear,NowMonth,NowPrecip,NowTemp,NowHeight,NowNumDeer,NowNumMushroom\n");
+    fprintf(myfile,"Time,NowYear,NowMonth,Precip (cm),Temperature (C), Height (cm) ,NumDeer,NumMushroom\n");
     
     float ang = (  30.*(float)NowMonth + 15.  ) * ( M_PI / 180. );
 
@@ -235,8 +236,8 @@ void Watcher() {
         
 
         //fprintf(myfile,"  %d   %d   %6.4lf   %6.4lf   %6.4lf   %d   %d \n", NowYear, NowMonth, NowPrecip, (5.0f / 9.0f) * (NowTemp - 32.0f), NowHeight * 2.54f, NowNumDeer, NowNumMushroom);
-        fprintf(myfile,"%d,%d,%6.4lf,%6.4lf,%6.4lf,%d,%d\n", NowYear, NowMonth, NowPrecip, (5.0f / 9.0f) * (NowTemp - 32.0f), NowHeight * 2.54f, NowNumDeer, NowNumMushroom);
-        
+        fprintf(myfile,"%d,%d,%d,%6.4lf,%6.4lf,%6.4lf,%d,%d\n",real_time++, NowYear, NowMonth, NowPrecip * 2.54f, (5.0f / 9.0f) * (NowTemp - 32.0f), NowHeight * 2.54f, NowNumDeer, NowNumMushroom);
+
        // fprintf(myfile,"%d,%d,%6.4lf,%6.4lf,%6.4lf,%d,%d\n", NowYear, NowMonth, NowPrecip, NowTemp, NowHeight , NowNumDeer, NowNumMushroom);
 
         ++NowMonth;
