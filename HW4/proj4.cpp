@@ -107,7 +107,7 @@ SimdMul( float *a, float *b,   float *c,   int len )
 		pc += SSE_WIDTH;
 	}
 
-	for( int i = limit; i < len; i++ )
+
 	for( int i = limit; i < len; ++i )
 	{
 		c[i] = a[i] * b[i];
@@ -132,7 +132,6 @@ SimdMulSum( float *a, float *b, int len )
 	}
 	_mm_storeu_ps( &sum[0], ss );
 
-	for( int i = limit; i < len; i++ )
 	for( int i = limit; i < len; ++i )
 	{
 		sum[0] += a[i] * b[i];
