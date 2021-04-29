@@ -5,16 +5,16 @@
 
 #define SSE_WIDTH		4
 
+int NUMTRIES = 100;
+
+#ifndef NUMT
+#define NUMT             1
+#endif
+
+
 #ifndef SIZE
 #define SIZE             1024
 #endif
-
-int NUMTRIES = 100;
-
-
-float A[SIZE];
-float B[SIZE];
-float C[SIZE];
 
 
 void Mul( float *a, float *b,   float *c,   int len );
@@ -31,6 +31,12 @@ int main(int argc, char const *argv[])
     return 1;
     #endif
 
+    if (argc >= 2)
+        SIZE = atoi(argv[1]);
+
+	float* A = new float[SIZE];
+	float* B = new float[SIZE];
+	float* C = new float[SIZE];
 
 	std::random_device rd;
 	std::mt19937 rng(rd());
@@ -52,40 +58,40 @@ int main(int argc, char const *argv[])
     double Mul_time = 9.9;
     double MulSum_time = 9.9;
 
+    
+		for (int i = 0; i < NUMTRIES; ++i)
+		{
+			time0 = omp_get_wtime();
+			SimdMulSum(A,B,SIZE);
+			time1 = omp_get_wtime();
 
-	for (int i = 0; i < NUMTRIES; ++i)
-	{
-		time0 = omp_get_wtime();
-		SimdMulSum(A,B,SIZE);
-		time1 = omp_get_wtime();
-
-		if((time1-time0) < SimdMulSum_time)
-			SimdMulSum_time = time1 - time0;
-
-
-		time0 = omp_get_wtime();
-		MulSum(A,B,SIZE);
-		time1 = omp_get_wtime();
-
-		if((time1-time0) < MulSum_time)
-			MulSum_time = time1 - time0;
-			
-
-		time0 = omp_get_wtime();
-		SimdMul(A,B,C,SIZE);
-		time1 = omp_get_wtime();
-
-		if((time1-time0) < SimdMul_time)
-			SimdMul_time = time1 - time0;
+			if((time1-time0) < SimdMulSum_time)
+				SimdMulSum_time = time1 - time0;
 
 
-		time0 = omp_get_wtime();
-		Mul(A,B,C,SIZE);
-		time1 = omp_get_wtime();
+			time0 = omp_get_wtime();
+			MulSum(A,B,SIZE);
+			time1 = omp_get_wtime();
 
-		if((time1-time0) < Mul_time)
-			Mul_time = time1 - time0;
-	}
+			if((time1-time0) < MulSum_time)
+				MulSum_time = time1 - time0;
+				
+
+			time0 = omp_get_wtime();
+			SimdMul(A,B,C,SIZE);
+			time1 = omp_get_wtime();
+
+			if((time1-time0) < SimdMul_time)
+				SimdMul_time = time1 - time0;
+
+
+			time0 = omp_get_wtime();
+			Mul(A,B,C,SIZE);
+			time1 = omp_get_wtime();
+
+			if((time1-time0) < Mul_time)
+				Mul_time = time1 - time0;
+		}
 
 	// calculate the performance
 	double p1 = (double)SIZE/ SimdMulSum_time / 1000000.0;
@@ -101,6 +107,9 @@ int main(int argc, char const *argv[])
 	// commas for .csv file, use "proj4.sh > out.csv" in the terminal
 	printf("%10.3lf,%10.3lf,%10.3lf,%10.3lf,,%10.3lf,%10.3lf\n",p1, p2, p3, p4, speedup_mulsum, speedup_mul);
 
+	delete A;
+	delete B;
+	delete C;
 	
 	return 0;
 }
