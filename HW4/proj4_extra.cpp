@@ -8,7 +8,7 @@
 int NUMTRIES = 100;
 
 #ifndef NUMT
-#define NUMT             1
+#define NUMT             4
 #endif
 
 
@@ -18,16 +18,11 @@ int NUMTRIES = 100;
 
 #define NUM_ELEMENTS_PER_CORE SIZE / NUMT
 
-float A[SIZE];
-float B[SIZE];
-float C[SIZE];
 
-
-
-void Mul( float *a, float *b,   float *c,   int len );
-float MulSum( float *a, float *b, int len );
-void SimdMul( float *a, float *b,   float *c,   int len );
-float SimdMulSum( float *a, float *b, int len );
+inline void Mul( float *a, float *b,   float *c,   int len );
+inline float MulSum( float *a, float *b, int len );
+inline void SimdMul( float *a, float *b,   float *c,   int len );
+inline float SimdMulSum( float *a, float *b, int len );
 
 
 int main(int argc, char const *argv[])
@@ -40,11 +35,16 @@ int main(int argc, char const *argv[])
 
 	std::random_device rd;
 	std::mt19937 rng(rd());
-	std::uniform_real_distribution<float> unival(12.5186272,853.019653); // This is my name in Floats - Mid-Little Endian (CDAB) 
-   	// std::uniform_real_distribution<float> unival(0.0,100.0);
+	//std::uniform_real_distribution<float> unival(12.5186272,853.019653); // This is my name in Floats - Mid-Little Endian (CDAB) 
+   	 std::uniform_real_distribution<float> unival(0.0,100.0);
 
 
-    for (int i = 0; i < SIZE; ++i)
+   	float* A = new float[SIZE];
+   	float* B = new float[SIZE];
+   	float* C = new float[SIZE];
+
+
+   for (int i = 0; i < SIZE; ++i)
     {
     	B[i] = unival(rng);
     	A[i] = unival(rng);
@@ -53,10 +53,10 @@ int main(int argc, char const *argv[])
     double time0 = 0.0;
     double time1 = 0.0;
 
-    double SimdMul_time = 9.9;
-    double SimdMulSum_time = 9.9;
-    double Mul_time = 9.9;
-    double MulSum_time = 9.9;
+    double SimdMul_time = 99.9;
+    double SimdMulSum_time = 99.9;
+    double Mul_time = 99.9;
+    double MulSum_time = 99.9;
 
     omp_set_num_threads( NUMT );
 
@@ -74,6 +74,11 @@ int main(int argc, char const *argv[])
 		if((time1-time0) < SimdMulSum_time)
 			SimdMulSum_time = time1 - time0;
 
+ 	}
+
+/*
+ 	for (int i = 0; i < NUMTRIES; ++i)
+	{
 
 		time0 = omp_get_wtime();
 		MulSum(A,B,SIZE);
@@ -81,7 +86,10 @@ int main(int argc, char const *argv[])
 
 		if((time1-time0) < MulSum_time)
 			MulSum_time = time1 - time0;
+ 	}
+		
 			
+		omp_set_num_threads( NUMT );
 
 		time0 = omp_get_wtime();
 		#pragma omp parallel
@@ -96,6 +104,9 @@ int main(int argc, char const *argv[])
 			SimdMul_time = time1 - time0;
 
 
+		omp_set_num_threads( NUMT );
+
+
 		time0 = omp_get_wtime();
 		Mul(A,B,C,SIZE);
 		time1 = omp_get_wtime();
@@ -103,23 +114,27 @@ int main(int argc, char const *argv[])
 		if((time1-time0) < Mul_time)
 			Mul_time = time1 - time0;
 	}
-
+*/
 	// calculate the performance
 	double p1 = (double)SIZE/ SimdMulSum_time / 1000000.0;
+
+	/*
 	double p2 = (double)SIZE/ MulSum_time / 1000000.0;
 	double p3 = (double)SIZE/ SimdMul_time / 1000000.0;
 	double p4 = (double)SIZE/ Mul_time / 1000000.0;
 
 	// commas for .csv file, use "proj4.sh > out.csv" in the terminal
 	printf("%10.3lf,%10.3lf,%10.3lf,%10.3lf,\n",p1, p2, p3, p4);
-
+*/
+	printf("%10.3lf\n",p1);
 	return 0;
 }
 
 
-void
+inline void
 Mul( float *a, float *b,   float *c,   int len )
 {
+	omp_set_num_threads( NUMT );
 	#pragma omp parallel for default(none), shared(a,b,c,len)
 	for( int i = 0; i < len; ++i )
 	{
@@ -128,11 +143,11 @@ Mul( float *a, float *b,   float *c,   int len )
 }
 
 
-float
+inline float
 MulSum( float *a, float *b, int len )
 {
 	float sum = 0.0f;
-
+	omp_set_num_threads( NUMT );
 	#pragma omp parallel for default(none), shared(a,b,len), reduction(+:sum)
 	for( int i = 0; i < len; ++i )
 	{
@@ -144,7 +159,7 @@ MulSum( float *a, float *b, int len )
 
 //assembly codes are at the end
 
-void
+inline void
 SimdMul( float *a, float *b,   float *c,   int len )
 {
 	int limit = ( len/SSE_WIDTH ) * SSE_WIDTH;
@@ -167,7 +182,7 @@ SimdMul( float *a, float *b,   float *c,   int len )
 }
 
 
-float
+inline float
 SimdMulSum( float *a, float *b, int len )
 {
 	float sum[4] = { 0., 0., 0., 0. };
