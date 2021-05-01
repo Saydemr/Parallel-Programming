@@ -5,7 +5,7 @@
 
 #define SSE_WIDTH		4
 
-int NUMTRIES = 1000;
+int NUMTRIES = 10000;
 
 #ifndef NUMT
 #define NUMT             4
@@ -36,7 +36,6 @@ int main(int argc, char const *argv[])
 	std::random_device rd;
 	std::mt19937 rng(rd());
 	std::uniform_real_distribution<float> unival(12.5186272,853.019653); // This is my name in Floats - Mid-Little Endian (CDAB) 
-   	//std::uniform_real_distribution<float> unival(0.0,100.0);
 
 
    	float* A = new float[SIZE];
@@ -143,7 +142,6 @@ MulSum( float *a, float *b, int len )
 	return sum;
 }
 
-//assembly codes are at the end
 
 void
 SimdMul( float *a, float *b,   float *c,   int len )
@@ -192,80 +190,3 @@ SimdMulSum( float *a, float *b, int len )
 
 	return sum[0] + sum[1] + sum[2] + sum[3];
 }
-
-
-
-// assembly codes
-
-/*
-void
-SimdMul( float *a, float *b,   float *c,   int len )
-{
-	int limit = ( len/SSE_WIDTH ) * SSE_WIDTH;
-	__asm
-	(
-		".att_syntax\n\t""movq  -24(%rbp), %r8\n\t"              
-		"movq  -32(%rbp), %rcx\n\t"           
-		"movq  -40(%rbp), %rdx\n\t"
-	);
-	for( int i = 0; i < limit; i += SSE_WIDTH )
-	{
-		__asm
-		(
-			".att_syntax\n\t"
-			"movups (%r8), %xmm0\n\t"        
-			"movups (%rcx), %xmm1\n\t"     
-			"mulps %xmm1, %xmm0\n\t"     
-			"movups %xmm0, (%rdx)\n\t"     
-			"addq $16, %r8\n\t"
-			"addq $16, %rcx\n\t"
-			"addq $16, %rdx\n\t"
-		);
-	}
-	
-	for( int i = limit; i < len; i++ )
-	{
-		c[ i ] = a[ i ] * b[ i ];
-	}
-}
-
-float
-SimdMulSum( float *a, float *b, int len )
-{
-	float sum[4] = { 0., 0., 0., 0. };
-	int limit = ( len/SSE_WIDTH ) * SSE_WIDTH;
-	__asm(
-		".att_syntax\n\t"
-		"movq  -40(%rbp), %r8\n\t"               // a
-		"movq  -48(%rbp), %rcx\n\t"             // b
-		"leaq   -32(%rbp), %rdx\n\t"            // &sum[0]
-		"movups (%rdx), %xmm2\n\t"           // 4 copies of 0. in xmm2
-	);
-	
-	for( int i = 0; i < limit; i += SSE_WIDTH )
-	{
-		__asm(
-			".att_syntax\n\t"
-			"movups (%r8), %xmm0\n\t"         // load the first sse register
-			"movups (%rcx), %xmm1\n\t"       // load the second sse register
-			"mulps %xmm1, %xmm0\n\t"       // do the multiply
-			"addps %xmm0, %xmm2\n\t"       // do the add
-			"addq $16, %r8\n\t""addq $16, %rcx\n\t"
-		);
-	}
-	
-	__asm
-	(
-		".att_syntax\n\t"
-		"movups %xmm2, (%rdx)\n\t"              // copy the sums back to sum[  ]
-	);
-
-	for( int i = limit; i < len; i++ )
-	{
-		sum[0] += a[ i ] * b[ i ];
-	}
-
-	return sum[0] + sum[1] + sum[2] + sum[3];
-
-}
-*/

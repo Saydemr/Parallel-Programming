@@ -9,7 +9,7 @@
 #define SIZE             1024
 #endif
 
-int NUMTRIES = 1000;
+int NUMTRIES = 10000;
 
 
 float A[SIZE];
