@@ -1,7 +1,5 @@
 #!/bin/bash
 
-
-
 echo "NUMT, Size, SimdMulSum,  MulSum,    SimdMul,      Mul,, Speedup MulSum, Speedup Mul"
 
 for t in 1 2 4 1 2 4 

@@ -5,7 +5,7 @@
 
 #define SSE_WIDTH		4
 
-int NUMTRIES = 100;
+int NUMTRIES = 1000;
 
 #ifndef NUMT
 #define NUMT             4
@@ -111,7 +111,7 @@ int main(int argc, char const *argv[])
 	double p4 = (double)SIZE/ Mul_time / 1000000.0;
 
 	// commas for .csv file, use "proj4.sh > out.csv" in the terminal
-	printf("%10.3lf,%10.3lf,%10.3lf,%10.3lf,\n",p1, p2, p3, p4);
+	printf("%10.6lf,%10.6lf,%10.6lf,%10.6lf,\n",p1, p2, p3, p4);
 
 	return 0;
 }

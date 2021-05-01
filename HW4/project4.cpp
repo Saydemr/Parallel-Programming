@@ -9,7 +9,7 @@
 #define SIZE             1024
 #endif
 
-int NUMTRIES = 100;
+int NUMTRIES = 1000;
 
 
 float A[SIZE];
@@ -35,7 +35,6 @@ int main(int argc, char const *argv[])
 	std::random_device rd;
 	std::mt19937 rng(rd());
 	std::uniform_real_distribution<float> unival(12.5186272,853.019653); // This is my name in Floats - Mid-Little Endian (CDAB) 
-   	// std::uniform_real_distribution<float> unival(0.0,100.0);
 
 
     for (int i = 0; i < SIZE; ++i)
@@ -99,7 +98,7 @@ int main(int argc, char const *argv[])
 	double speedup_mul = (double)Mul_time/(double)SimdMul_time;
 
 	// commas for .csv file, use "proj4.sh > out.csv" in the terminal
-	printf("%10.3lf,%10.3lf,%10.3lf,%10.3lf,,%10.3lf,%10.3lf\n",p1, p2, p3, p4, speedup_mulsum, speedup_mul);
+	printf("%10.6lf,%10.6lf,%10.6lf,%10.6lf,,%10.6lf,%10.6lf\n",p1, p2, p3, p4, speedup_mulsum, speedup_mul);
 
 	
 	return 0;
