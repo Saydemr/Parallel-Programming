@@ -186,9 +186,9 @@ main(int argc, char* argv[])
     double sec = msecTotal / 1000.0;
 
     // compute and print the performance
-    double MegaTrials = (double)NUMTRIALS / (double)sec / 1000000.0 ;
+    double GigaTrials = (double)NUMTRIALS / (double)sec / 1000000000.0 ;
 
-    printf("%6.8lf,", MegaTrials);
+    printf("%6.8lf,", GigaTrials);
 
     // copy result from the device to the host:
     cudaMemcpy(hhits, dhits, NUMTRIALS * sizeof(int), cudaMemcpyDeviceToHost);
