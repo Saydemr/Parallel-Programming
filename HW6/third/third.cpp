@@ -20,12 +20,12 @@
 #endif
 
 #ifndef LOCAL_SIZE
-#define	LOCAL_SIZE		64
+#define	LOCAL_SIZE		64         // localWorkSize
 #endif
 
-#define	NUM_WORK_GROUPS		NUM_ELEMENTS/LOCAL_SIZE
+#define	NUM_WORK_GROUPS		(NUM_ELEMENTS/LOCAL_SIZE)
 
-const char *	CL_FILE_NAME = { "second.cl" };
+const char *	CL_FILE_NAME = { "third.cl" };
 const float		TOL = 0.0001f;
 
 // globals:
@@ -82,6 +82,8 @@ int main( int argc, char *argv[ ] )
 	float *hA = new float[ NUM_ELEMENTS    ];
 	float *hB = new float[ NUM_ELEMENTS    ];
 	float *hC = new float[ NUM_WORK_GROUPS ];
+	size_t abSize = NUM_ELEMENTS * sizeof(float);
+	size_t  cSize = NUM_WORK_GROUPS  * sizeof(float);
 	
 
 	// fill the host memory buffers:
@@ -91,8 +93,7 @@ int main( int argc, char *argv[ ] )
 		hA[i] = hB[i] = (float) sqrt(  (double)i  );
 	}
 
-	size_t abSize = NUM_ELEMENTS * sizeof(float);
-	size_t  cSize = NUM_WORK_GROUPS  * sizeof(float);
+
 	// 3. create an opencl context:
 
 	cl_context context = clCreateContext( NULL, 1, &device, NULL, NULL, &status );
@@ -169,7 +170,7 @@ int main( int argc, char *argv[ ] )
 
 	// 9. create the kernel object:
 
-	cl_kernel kernel = clCreateKernel( program, "ArrayMult", &status );
+	cl_kernel kernel = clCreateKernel( program, "ArrayMultReduce", &status );
 	if( status != CL_SUCCESS )
 		fprintf( stderr, "clCreateKernel failed\n" );
 
