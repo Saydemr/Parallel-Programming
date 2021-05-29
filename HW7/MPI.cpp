@@ -41,7 +41,7 @@
 
 // print debugging messages?
 
-#define DEBUG		true
+#define DEBUG		false
 
 // globals:
 
@@ -148,12 +148,12 @@ main( int argc, char *argv[ ] )
 			if( dst == BOSS )
 				continue;
 
-			MPI_Send( &BigSignal[dst*PPSize], ???, ???, ???, ???, ??? );
+			MPI_Send( &BigSignal[dst*PPSize], PPSize+MAXSHIFTS, MPI_FLOAT, dst, TAG_SCATTER, MPI_COMM_WORLD);
 		}
 	}
 	else
 	{
-		MPI_Recv( PPSignal, ???, ???, ???, ???, ???, &status );
+		MPI_Recv( PPSignal, PPSize+MAXSHIFTS, MPI_FLOAT, BOSS, TAG_SCATTER, MPI_COMM_WORLD, &status);
 	}
 
 	// each processor does its own autocorrelation:
@@ -171,7 +171,7 @@ main( int argc, char *argv[ ] )
 	}
 	else
 	{
-		MPI_Send( PPSums, ???, ???, ???, ???, ??? );
+		MPI_Send( PPSums, MAXSHIFTS, MPI_FLOAT, BOSS, TAG_GATHER, MPI_COMM_WORLD );
 	}
 
 	// receive the sums and add them into the overall sums:
@@ -184,7 +184,7 @@ main( int argc, char *argv[ ] )
 			if( src == BOSS )
 				continue;
 
-			MPI_Recv( tmpSums, ???, ???, ???, ???, ???, );
+			MPI_Recv( tmpSums, MAXSHIFTS, MPI_FLOAT, src, TAG_GATHER, MPI_COMM_WORLD, &status);
 			for( int s = 0; s < MAXSHIFTS; s++ )
 				BigSums[s] += tmpSums[s];
 		}
