@@ -7,4 +7,8 @@
 #SBATCH  -o  mpi.txt
 #SBATCH  -e  mpi.err
 mpic++ MPI.cpp -o mpi -lm
-mpiexec -mca btl self,tcp -np  4  mpi
+
+for t in 4 8 16 32
+do 
+	mpiexec -mca btl self,tcp -np  $t  mpi
+done
